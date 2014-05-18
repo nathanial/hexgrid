@@ -17,11 +17,13 @@
 		this.hexHeight = 2 * this.diagonalY;
 		this.graphics = new PIXI.Graphics();
 		this.stage.addChild(this.graphics);
+		this.highlights = [];
 	};
 
 	_.extend(HexGrid.prototype, {
 
 		render: function(){
+			window.Game.shouldRender = true;
 			for(var i = 0; i < this.rows; i++){
 				for(var j = 0; j < this.columns; j++){
 					this._drawHexagon(j, i);
@@ -47,6 +49,20 @@
 			};
 		},
 
+		highlight: function(column, row){
+			var index = column.toString() + "," + row.toString();
+			this.highlights[index] = true;
+		},
+
+		unhighlight: function(column, row){
+			var index = column.toString() + "," + row.toString();
+			this.highlights[index] = false;
+		},
+
+		clearHighlights: function(){
+			this.highlights = {};
+		},
+
 		_drawHexagon: function(column, row){
 			var xlen = this.diagonalX;
 			var ylen = this.diagonalY;
@@ -59,7 +75,11 @@
 			var x1 = position.x;
 			var y1 = position.y;
 
-			g.beginFill(0xffffff);
+			if(this._isHighlighted(column,row)){
+				g.beginFill(0xaaaaff);
+			} else {
+				g.beginFill(0xffffff);
+			}
 			g.lineStyle(1, 0x000000, 1);
 			g.moveTo(x1,y1); //left center
 			g.lineTo(x1 + xlen * 1,y1 + ylen); //left bottom
@@ -69,6 +89,11 @@
 			g.lineTo(x1 + xlen * 1, y1 - ylen); //left top
 			g.lineTo(x1, y1); //left center
 			g.endFill();
+		},
+
+		_isHighlighted: function(column, row){
+			var index = column.toString() + "," + row.toString();
+			return this.highlights[index];
 		}
 	});
 

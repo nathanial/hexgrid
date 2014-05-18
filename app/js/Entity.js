@@ -1,4 +1,4 @@
-/*global _, PIXI*/
+/*global _, PIXI, _*/
 (function(){
 	'use strict';
 
@@ -18,18 +18,27 @@
 		this.graphics = new PIXI.Graphics();
 		this.graphics.interactive = true;
 
+
 		this.updatePosition();
-		this.graphics.mousedown = function(){
-			self.row += 1;
-			self.updatePosition();
-			self.render();
+		this.graphics.mouseover = function(){
+			_.each(self._adjacent(), function(adjacent){
+				self.grid.highlight(adjacent.column, adjacent.row);
+			});
+			self.grid.render();
 		};
+		this.graphics.mouseout = function(){
+			_.each(self._adjacent(), function(adjacent){
+				self.grid.unhighlight(adjacent.column, adjacent.row);
+			})
+			self.grid.render();
+		}
 
 		this.stage.addChild(this.graphics);
 	};
 
 	_.extend(Entity.prototype, {
 		render: function(){
+			window.Game.shouldRender = true;
 			var position = this.position;
 
 			this.graphics.clear();
@@ -49,6 +58,18 @@
 			this.position = position;
 
 			this.graphics.hitArea = new PIXI.Rectangle(position.x, position.y, this.entityWidth, this.entityHeight);
+		},
+
+		_adjacent: function(){
+			return [
+				{row: this.row+1, column: this.column},
+				{row: this.row, column:this.column+1},
+				{row: this.row+1, column:this.column+1},
+				{row: this.row-1, column:this.column},
+				{row: this.row, column:this.column-1},
+				{row: this.row, column:this.column-1},
+				{row: this.row+1, column:this.column-1}
+			];
 		}
 	});
 

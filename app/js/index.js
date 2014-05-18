@@ -5,6 +5,8 @@
 	var stage = new PIXI.Stage(0xFFFFFF, true);
 	stage.interactive = true;
 
+	window.Game = {};
+
 
 	var grid = new HexGrid({
 		rows: 21,
@@ -20,22 +22,27 @@
 	grid.render();
 
 	var entity = new Entity({
-		row: 0,
-		column: 0,
+		row: 10,
+		column: 10,
 		grid: grid,
 		stage: stage
 	});
 
 	entity.render();
 
-	var renderer = new PIXI.CanvasRenderer(1000,800, undefined, false);
+	var renderer = new PIXI.autoDetectRenderer(1000,800, undefined, false, false);
 	renderer.interactive = true;
 	$(function(){
 		$(".game").html(renderer.view);
 		renderer.render(stage);
 
 		function render(){
-			renderer.render(stage);
+			if(window.Game.shouldRender){
+				window.Game.shouldRender = false;
+				renderer.render(stage);
+			} else {
+				stage.interactionManager.update();
+			}
 			requestAnimationFrame(render);
 		}
 
