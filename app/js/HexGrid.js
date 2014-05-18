@@ -1,4 +1,4 @@
-/*global _*/
+/*global _, PIXI*/
 (function(){
 	'use strict';
 
@@ -10,9 +10,13 @@
 		this.margin = options.margin || {top: 0, left: 0};
 		this.columns = options.columns;
 		this.hexSide = options.hexSide || 25;
-		this.graphics = options.graphics;
+		this.stage = options.stage;
 		this.diagonalX = Math.abs(Math.cos(90) * this.hexSide);
 		this.diagonalY = Math.abs(Math.sin(90) * this.hexSide);
+		this.hexWidth = this.hexSide + 2 * this.diagonalX;
+		this.hexHeight = 2 * this.diagonalY;
+		this.graphics = new PIXI.Graphics();
+		this.stage.addChild(this.graphics);
 	};
 
 	_.extend(HexGrid.prototype, {
@@ -25,16 +29,35 @@
 			}
 		},
 
+		hexPosition: function(column, row){
+			var offset = (column % 2 === 0 ? 1 : 0) * this.diagonalY;
+			var x1 = ((this.hexSide + this.diagonalX) * column) + this.margin.left;
+			var y1 = ((this.diagonalY * 2) * row + offset) + this.margin.top;
+			return {
+				x: x1,
+				y: y1
+			};
+		},
+
+		centerOfHex: function(column, row){
+			var position = this.hexPosition(column, row);
+			return {
+				x: position.x + (this.hexWidth / 2),
+				y: position.y //+ (this.hexHeight / 2)
+			};
+		},
+
 		_drawHexagon: function(column, row){
 			var xlen = this.diagonalX;
 			var ylen = this.diagonalY;
 			var side = this.hexSide;
 			var g = this.graphics;
 
-			var offset = (column % 2 === 0 ? 1 : 0) * ylen;
-			var x1 = ((side + xlen) * column) + this.margin.left;
-			var y1 = ((ylen * 2) * row + offset) + this.margin.top;
 
+			var position = this.hexPosition(column, row);
+
+			var x1 = position.x;
+			var y1 = position.y;
 
 			g.beginFill(0xffffff);
 			g.lineStyle(1, 0x000000, 1);

@@ -4,7 +4,8 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore.js"></script>
     <script src="js/vendor/pixi.dev.js"></script>
-    <script src="js/Hexgrid.js"></script>
+    <script src="js/HexGrid.js"></script>
+    <script src="js/Entity.js"></script>
     <script src="js/index.js"></script>
     <style>
         body {
@@ -18,26 +19,6 @@
             border: 1px solid black;
         }
     </style>
-    <script>
-        $(function(){
-            var oldData;
-            function refresh(){
-                $.get('js/index.js', function(data){
-                    try {
-                        if(data !== oldData){
-                            oldData = data;
-                            console.log("REFRESH");
-                            eval(data);
-                        }
-                    } catch(error){
-                        console.log(error);
-                    }
-                    setTimeout(refresh, 1000);
-                });
-            }
-            refresh();
-        });
-    </script>
 </head>
 <body>
 <div class="game">
