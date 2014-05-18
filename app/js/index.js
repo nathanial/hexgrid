@@ -3,7 +3,7 @@
 	'use strict';
 
 	var stage = new PIXI.Stage(0xFFFFFF, true);
-	stage.setInteractive(true);
+	stage.interactive = true;
 
 
 	var grid = new HexGrid({
@@ -29,14 +29,16 @@
 	entity.render();
 
 	var renderer = new PIXI.CanvasRenderer(1000,800, undefined, false);
+	renderer.interactive = true;
 	$(function(){
 		$(".game").html(renderer.view);
 		renderer.render(stage);
 
-		setInterval(function(){
-			entity.column = (entity.column + 1) % grid.columns;
-			entity.render();
+		function render(){
 			renderer.render(stage);
-		}, 100);
+			requestAnimationFrame(render);
+		}
+
+		render();
 	});
 })();
