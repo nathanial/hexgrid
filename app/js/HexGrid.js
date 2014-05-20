@@ -1,11 +1,22 @@
-/*global _, PIXI, Hex*/
+/*global _, PIXI, Hex, Cropper, $*/
 (function(){
 	'use strict';
+
+	function loadImage(path){
+		var img = new Image();
+		var d = $.Deferred();
+		img.onload = function(){
+			d.resolve(img);
+		};
+		img.src = path;
+		return d.promise();
+	}
 
 	var HexGrid = function(options){
 		if(!(this instanceof HexGrid)){
 			return new HexGrid(options);
 		}
+		var self = this;
 		this.rows = options.rows;
 		this.columns = options.columns;
 		this.hexSide = options.hexSide || 25;
@@ -14,23 +25,32 @@
 		this.diagonalY = Math.abs(Math.sin(90) * this.hexSide);
 		this.hexWidth = this.hexSide + 2 * this.diagonalX;
 		this.hexHeight = 2 * this.diagonalY;
+		this.cropper = new Cropper({
+			diagonalX: this.diagonalX,
+			diagonalY: this.diagonalY,
+			hexSide: this.hexSide
+		});
+
+		loadImage("img/textures/Free-Water-Texture-500x375.jpg").then(function(image){
+			var dataURI = self.cropper.crop(image);
+			self.textures.highlightedHex = PIXI.Texture.fromImage(dataURI);
+		});
 
 		this.hexs = {};
 
+
 		this.textures = {
-			unhighlightedHex: Hex.createTexture({
+			hexBorder: Hex.createTexture({
 				diagonalX: this.diagonalX,
 				diagonalY: this.diagonalY,
 				hexSide: this.hexSide
-			}),
-//			highlightedHex: Hex.createTexture({
-//				diagonalX: this.diagonalX,
-//				diagonalY: this.diagonalY,
-//				hexSide: this.hexSide,
-//				highlighted: true
-//			})
-			highlightedHex: PIXI.Texture.fromImage("img/textures/Free-Water-Texture-500x375.jpg")
-		}
+			}, false),
+			hexFill: Hex.createTexture({
+				diagonalX: this.diagonalX,
+				diagonalY: this.diagonalY,
+				hexSide: this.hexSide
+			}, true)
+		};
 
 		for(var i = 0; i < this.rows; i++){
 			for(var j = 0; j < this.columns; j++){
@@ -40,7 +60,9 @@
 					diagonalY: this.diagonalY,
 					stage: this.stage,
 					textures: this.textures,
-					masks: this.masks
+					masks: this.masks,
+					hexWidth: this.hexWidth,
+					hexHeight: this.hexHeight
 				});
 			}
 		}

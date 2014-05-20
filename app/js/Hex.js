@@ -10,12 +10,18 @@
 		this.row = row;
 		this.highlighted = false;
 		_.extend(this, options);
-		this.sprite = new PIXI.Sprite(this.textures.unhighlightedHex);
+
 		var position = this.hexPosition();
 
-		_.extend(this.sprite.position, position);
+		this.contentSprite = new PIXI.Sprite(this.textures.hexFill);
+		this.borderSprite = new PIXI.Sprite(this.textures.hexBorder);
 
-		this.stage.addChild(this.sprite);
+		this.container = new PIXI.DisplayObjectContainer();
+		this.container.addChild(this.contentSprite);
+		this.container.addChild(this.borderSprite);
+
+		_.extend(this.container.position, position);
+		this.stage.addChild(this.container);
 	};
 
 	_.extend(Hex.prototype, {
@@ -32,38 +38,20 @@
 		},
 
 		highlight: function(){
-			this.sprite.setTexture(this.textures.highlightedHex);
+			this.contentSprite.setTexture(this.textures.highlightedHex);
+			console.log(this.contentSprite.position);
 			window.Game.shouldRender = true;
 		},
 
 		unhighlight: function(){
-			this.sprite.setTexture(this.textures.unhighlightedHex);
+			this.contentSprite.setTexture(this.textures.hexFill);
+			this.contentSprite.position.x = 0;
+			this.contentSprite.position.y = 0;
 			window.Game.shouldRender = true;
 		}
-
 	});
 
-	Hex.createMask = function(options){
-		var g = new PIXI.Graphics();
-		var x1 = options.x;
-		var y1 = options.y;
-		var xlen = options.diagonalX;
-		var ylen = options.diagonalY;
-		var side = options.hexSide;
-
-		g.beginFill(0);
-		g.moveTo(x1,y1); //left center
-		g.lineTo(x1 + xlen * 1,y1 + ylen); //left bottom
-		g.lineTo(x1 + side + xlen * 1,y1 + ylen); //right bottom
-		g.lineTo(x1 + side + xlen * 2, y1);//right center
-		g.lineTo(x1 + side + xlen * 1, y1 - ylen); //right top
-		g.lineTo(x1 + xlen * 1, y1 - ylen); //left top
-		g.lineTo(x1, y1); //left center
-		g.endFill();
-		return g;
-	};
-
-	Hex.createTexture = function(options){
+	Hex.createTexture = function(options, fill){
 		var xlen = options.diagonalX;
 		var ylen = options.diagonalY;
 		var side = options.hexSide;
@@ -72,13 +60,13 @@
 		var x1 = 0;
 		var y1 = 0;
 
-		if(options.highlighted){
-			g.beginFill(0xaaaaff);
-		} else {
+		if(fill){
 			g.beginFill(0xffffff);
+			g.lineStyle(0, 0x000000, 1);
+		} else {
+			g.lineStyle(1, 0x000000, 1);
 		}
 
-		g.lineStyle(1, 0x000000, 1);
 		g.moveTo(x1,y1); //left center
 		g.lineTo(x1 + xlen * 1,y1 + ylen); //left bottom
 		g.lineTo(x1 + side + xlen * 1,y1 + ylen); //right bottom
@@ -86,7 +74,10 @@
 		g.lineTo(x1 + side + xlen * 1, y1 - ylen); //right top
 		g.lineTo(x1 + xlen * 1, y1 - ylen); //left top
 		g.lineTo(x1, y1); //left center
-		g.endFill();
+
+		if(fill){
+			g.endFill();
+		}
 		return g.generateTexture();
 	};
 
