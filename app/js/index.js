@@ -19,16 +19,12 @@
 		}
 	});
 
-	grid.render();
-
 	var entity = new Entity({
 		row: 10,
 		column: 10,
 		grid: grid,
 		stage: stage
 	});
-
-	entity.render();
 
 	var renderer = new PIXI.autoDetectRenderer(1000,800, undefined, false, false);
 	renderer.interactive = true;
