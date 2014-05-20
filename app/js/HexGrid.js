@@ -1,4 +1,4 @@
-/*global _, PIXI*/
+/*global _, PIXI, Hex*/
 (function(){
 	'use strict';
 
@@ -17,32 +17,34 @@
 		this.hexHeight = 2 * this.diagonalY;
 		this.graphics = new PIXI.Graphics();
 		this.stage.addChild(this.graphics);
-		this.highlights = [];
+
+		this.hexs = {};
+
+		for(var i = 0; i < this.rows; i++){
+			for(var j = 0; j < this.columns; j++){
+				this.hexs[j+','+i] = new Hex(j, i,{
+					graphics: this.graphics,
+					hexSide: this.hexSide,
+					diagonalX: this.diagonalX,
+					diagonalY: this.diagonalY,
+					margin: this.margin
+				});
+			}
+		}
 	};
 
 	_.extend(HexGrid.prototype, {
 
 		render: function(){
 			window.Game.shouldRender = true;
-			for(var i = 0; i < this.rows; i++){
-				for(var j = 0; j < this.columns; j++){
-					this._drawHexagon(j, i);
-				}
-			}
-		},
-
-		hexPosition: function(column, row){
-			var offset = (column % 2 === 0 ? 1 : 0) * this.diagonalY;
-			var x1 = ((this.hexSide + this.diagonalX) * column) + this.margin.left;
-			var y1 = ((this.diagonalY * 2) * row + offset) + this.margin.top;
-			return {
-				x: x1,
-				y: y1
-			};
+			_.each(this.hexs, function(hex){
+				hex.render();
+			});
 		},
 
 		centerOfHex: function(column, row){
-			var position = this.hexPosition(column, row);
+			var hex = this.getHex(column, row);
+			var position = hex.hexPosition(column, row);
 			return {
 				x: position.x + (this.hexWidth / 2),
 				y: position.y //+ (this.hexHeight / 2)
@@ -50,50 +52,28 @@
 		},
 
 		highlight: function(column, row){
-			var index = column.toString() + "," + row.toString();
-			this.highlights[index] = true;
+			var hex = this.hexs[column + ',' + row];
+			hex.highlighted = true;
+			hex.render();
 		},
 
 		unhighlight: function(column, row){
-			var index = column.toString() + "," + row.toString();
-			this.highlights[index] = false;
+			var hex = this.hexs[column + ',' + row];
+			hex.highlighted = false;
+			hex.render();
 		},
 
 		clearHighlights: function(){
-			this.highlights = {};
+			_.each(this.hexs, function(hex){
+				if(hex.highlighted){
+					hex.highlighted = false;
+					hex.render();
+				}
+			});
 		},
 
-		_drawHexagon: function(column, row){
-			var xlen = this.diagonalX;
-			var ylen = this.diagonalY;
-			var side = this.hexSide;
-			var g = this.graphics;
-
-
-			var position = this.hexPosition(column, row);
-
-			var x1 = position.x;
-			var y1 = position.y;
-
-			if(this._isHighlighted(column,row)){
-				g.beginFill(0xaaaaff);
-			} else {
-				g.beginFill(0xffffff);
-			}
-			g.lineStyle(1, 0x000000, 1);
-			g.moveTo(x1,y1); //left center
-			g.lineTo(x1 + xlen * 1,y1 + ylen); //left bottom
-			g.lineTo(x1 + side + xlen * 1,y1 + ylen); //right bottom
-			g.lineTo(x1 + side + xlen * 2, y1);//right center
-			g.lineTo(x1 + side + xlen * 1, y1 - ylen); //right top
-			g.lineTo(x1 + xlen * 1, y1 - ylen); //left top
-			g.lineTo(x1, y1); //left center
-			g.endFill();
-		},
-
-		_isHighlighted: function(column, row){
-			var index = column.toString() + "," + row.toString();
-			return this.highlights[index];
+		getHex: function(column, row){
+			return this.hexs[column.toString() + ',' + row.toString()];
 		}
 	});
 

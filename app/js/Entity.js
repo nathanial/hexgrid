@@ -24,13 +24,13 @@
 			_.each(self._adjacent(), function(adjacent){
 				self.grid.highlight(adjacent.column, adjacent.row);
 			});
-			self.grid.render();
+			self.grid.getHex(self.column, self.row).render();
 		};
 		this.graphics.mouseout = function(){
 			_.each(self._adjacent(), function(adjacent){
 				self.grid.unhighlight(adjacent.column, adjacent.row);
-			})
-			self.grid.render();
+			});
+			self.grid.getHex(self.column, self.row).render();
 		}
 
 		this.stage.addChild(this.graphics);
