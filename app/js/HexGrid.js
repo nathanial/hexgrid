@@ -2,6 +2,11 @@
 (function(){
 	'use strict';
 
+	function choose(array){
+		var r = Math.round(Math.random() * array.length);
+		return array[r % array.length];
+	}
+
 	function loadImage(path){
 		var img = new Image();
 		var d = $.Deferred();
@@ -10,6 +15,11 @@
 		};
 		img.src = path;
 		return d.promise();
+	}
+
+	function emptyTexture(){
+		var graphics = new PIXI.Graphics();
+		return graphics.generateTexture();
 	}
 
 	var HexGrid = function(options){
@@ -31,41 +41,49 @@
 			hexSide: this.hexSide
 		});
 
-		loadImage("img/textures/Free-Water-Texture-500x375.jpg").then(function(image){
-			var dataURI = self.cropper.crop(image);
-			self.textures.highlightedHex = PIXI.Texture.fromImage(dataURI);
-		});
-
-		this.hexs = {};
-
-
 		this.textures = {
 			hexBorder: Hex.createTexture({
 				diagonalX: this.diagonalX,
 				diagonalY: this.diagonalY,
 				hexSide: this.hexSide
 			}, false),
-			hexFill: Hex.createTexture({
-				diagonalX: this.diagonalX,
-				diagonalY: this.diagonalY,
-				hexSide: this.hexSide
-			}, true)
+			hexFill: emptyTexture()
 		};
 
-		for(var i = 0; i < this.rows; i++){
-			for(var j = 0; j < this.columns; j++){
-				this.hexs[j+','+i] = new Hex(j, i,{
-					hexSide: this.hexSide,
-					diagonalX: this.diagonalX,
-					diagonalY: this.diagonalY,
-					stage: this.stage,
-					textures: this.textures,
-					masks: this.masks,
-					hexWidth: this.hexWidth,
-					hexHeight: this.hexHeight
-				});
-			}
-		}
+		this.hexs = {};
+
+		loadImage("img/textures/Free-Water-Texture-500x375.jpg").then(function(waterImage){
+			loadImage("img/textures/3.sand-texture.jpg").then(function(sandImage){
+				var waterCrop = self.cropper.crop(waterImage);
+				var sandCrop = self.cropper.crop(sandImage);
+
+				self.textures.waterTexture = PIXI.Texture.fromImage(waterCrop);
+				self.textures.sandTexture = PIXI.Texture.fromImage(sandCrop);
+
+				for(var i = 0; i < self.rows; i++){
+					for(var j = 0; j < self.columns; j++){
+						self.hexs[j+','+i] = new Hex(j, i,{
+							hexSide: self.hexSide,
+							diagonalX: self.diagonalX,
+							diagonalY: self.diagonalY,
+							stage: self.stage,
+							textures: self.textures,
+							masks: self.masks,
+							hexWidth: self.hexWidth,
+							hexHeight: self.hexHeight,
+							selectedTexture: choose([self.textures.waterTexture, self.textures.sandTexture])
+						});
+					}
+				}
+				window.Game.shouldRender = true;
+			});
+		});
+
+
+
+
+
+
 	};
 
 	_.extend(HexGrid.prototype, {
